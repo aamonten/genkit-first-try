@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"log"
+	"os"
 
 	"github.com/firebase/genkit/go/ai"
 	"github.com/firebase/genkit/go/plugins/vertexai"
@@ -51,19 +53,42 @@ func main() {
 		},
 	)
 
-	request := ai.GenerateRequest{
+	/* 	request1 := ai.GenerateRequest{
 		Messages: []*ai.Message{
 			{Content: []*ai.Part{ai.NewTextPart("Tell me a joke.")},
 				Role: ai.RoleUser},
 		},
 		Tools: []*ai.ToolDefinition{myJoke},
-	}
-	response, err := gemini15pro.Generate(ctx, &request, nil)
+	} */
+	/* response, err := gemini15pro.Generate(ctx, &request, nil)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	print("Response:")
-	print(response.Text())
+	print(response.Text()) */
+
+	imageBytes, err := os.ReadFile("image.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	encodedImage := base64.StdEncoding.EncodeToString(imageBytes)
+
+	request2 := ai.GenerateRequest{Messages: []*ai.Message{
+		{Content: []*ai.Part{
+			ai.NewTextPart("Identify any furnitures in the following image and give the name of a similar one from IKEA."),
+			ai.NewMediaPart("", "data:image/jpeg;base64,"+encodedImage),
+		}},
+	}}
+
+	response2, err := gemini15pro.Generate(ctx, &request2, nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	print("Response:")
+	print(response2.Text())
 }
