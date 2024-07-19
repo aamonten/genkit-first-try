@@ -61,7 +61,7 @@ func main() {
 
 	//rsvp, _ := jokesFlow.Run(context.Background(), "abc")
 	//fmt.Print(rsvp)
-	if err := genkit.Init(context.Background(), nil); err != nil {
+	if err := genkit.Init(context.Background(), &genkit.Options{FlowAddr: ":3400"}); err != nil {
 		log.Fatal(err)
 	}
 }
