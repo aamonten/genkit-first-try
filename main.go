@@ -2,12 +2,19 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log"
 
 	"github.com/firebase/genkit/go/ai"
 	"github.com/firebase/genkit/go/genkit"
 	"github.com/firebase/genkit/go/plugins/vertexai"
+	"github.com/invopop/jsonschema"
 )
+
+type HelloPromptInput struct {
+	UserName string
+}
 
 func main() {
 
@@ -34,21 +41,39 @@ func main() {
 		},
 	)
 
+	helloPrompt := ai.DefinePrompt(
+		"prompts",
+		"helloPrompt",
+		nil,
+		jsonschema.Reflect(HelloPromptInput{}),
+		func(ctx context.Context, input any) (*ai.GenerateRequest, error) {
+			params, ok := input.(HelloPromptInput)
+			if !ok {
+				return nil, errors.New("input doesn't satisfy schema")
+			}
+			prompt := fmt.Sprintf(
+				"You are a helpful AI Assistant named Walt. Say hello %s, present yourself and tell a joke",
+				params.UserName)
+			return &ai.GenerateRequest{
+				Messages: []*ai.Message{
+					{Content: []*ai.Part{ai.NewTextPart(prompt)}},
+				},
+				Tools: []*ai.ToolDefinition{myJoke},
+			}, nil
+		},
+	)
+
 	genkit.DefineFlow(
 		"jokesFlow",
 		func(ctx context.Context, theme string) (string, error) {
 			gemini15pro := vertexai.Model("gemini-1.5-pro")
 			//myJoke := core.LookupActionFor(atype.ActionType().Tool, "local", "myJoke")
 
-			request := ai.GenerateRequest{
-				Messages: []*ai.Message{
-					{Content: []*ai.Part{ai.NewTextPart("Tell me a joke.")},
-						Role: ai.RoleUser},
-				},
-				Tools: []*ai.ToolDefinition{myJoke},
+			request, err := helloPrompt.Render(context.Background(), HelloPromptInput{UserName: "Fred"})
+			if err != nil {
+				log.Fatal(err)
 			}
-
-			response, err := gemini15pro.Generate(ctx, &request, nil)
+			response, err := gemini15pro.Generate(ctx, request, nil)
 
 			if err != nil {
 				log.Fatal(err)
@@ -59,9 +84,7 @@ func main() {
 		},
 	)
 
-	//rsvp, _ := jokesFlow.Run(context.Background(), "abc")
-	//fmt.Print(rsvp)
-	if err := genkit.Init(context.Background(), &genkit.Options{FlowAddr: ":3400"}); err != nil {
+	if err := genkit.Init(ctx, nil); err != nil {
 		log.Fatal(err)
 	}
 }

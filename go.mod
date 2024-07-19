@@ -2,7 +2,10 @@ module github.com/aamonten/genkit-first-try
 
 go 1.22.5
 
-require github.com/firebase/genkit/go v0.0.2
+require (
+	github.com/firebase/genkit/go v0.0.2
+	github.com/invopop/jsonschema v0.12.0
+)
 
 require (
 	cloud.google.com/go v0.115.0 // indirect
@@ -24,7 +27,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.5 // indirect
-	github.com/invopop/jsonschema v0.12.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
